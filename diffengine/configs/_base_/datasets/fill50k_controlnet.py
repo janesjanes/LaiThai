@@ -15,8 +15,8 @@ train_pipeline = [
     dict(
         type=TorchVisonTransformWrapper,
         transform=torchvision.transforms.Resize,
-        size=512,
-        interpolation="bilinear",
+        size=550,
+        interpolation="nearest",
         keys=["img", "condition_img"]),
     dict(type=RandomCrop, size=512, keys=["img", "condition_img"]),
     dict(type=RandomHorizontalFlip, p=0.5, keys=["img", "condition_img"]),
@@ -29,13 +29,15 @@ train_pipeline = [
     dict(type=PackInputs, input_keys=["img", "condition_img", "text"]),
 ]
 train_dataloader = dict(
-    batch_size=8,
-    num_workers=4,
+    batch_size=10,
+    num_workers=1,
     dataset=dict(
         type=HFControlNetDataset,
-        dataset="fusing/fill50k",
+        dataset="datasets/",
         condition_column="conditioning_image",
         caption_column="text",
+        image_column="file_name",
+        csv="metadata_train.csv",
         pipeline=train_pipeline),
     sampler=dict(type=DefaultSampler, shuffle=True),
 )
@@ -48,9 +50,9 @@ test_evaluator = val_evaluator
 custom_hooks = [
     dict(
         type=VisualizationHook,
-        prompt=["cyan circle with brown floral background"] * 4,
+        prompt=["Traditional Thai Line Art"],
         condition_image=[
-            'https://github.com/okotaku/diffengine/assets/24734142/1af9dbb0-b056-435c-bc4b-62a823889191'  # noqa
-        ] * 4),
+            'datasets/LaiThai_dataset_sketch/test/00034_05.jpg'  # noqa
+        ]),
     dict(type=ControlNetSaveHook),
 ]
