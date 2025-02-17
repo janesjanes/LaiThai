@@ -1,4 +1,3 @@
-# flake8: noqa: S311
 import html
 import inspect
 import random
@@ -6,6 +5,8 @@ import re
 import urllib.parse as ul
 from collections.abc import Sequence
 from enum import EnumMeta
+
+from PIL import Image, ImageDraw
 
 import numpy as np
 import timm
@@ -33,6 +34,24 @@ def _str_to_torch_dtype(t: str):  # noqa
     import torch  # noqa: F401
     return eval(f"torch.{t}")  # noqa
 
+def gen_partial_sketch(image):
+  white_image = Image.new("RGB", image.size, "white")
+  mask = Image.new("L", image.size, 0)
+  draw = ImageDraw.Draw(mask)
+  w, h = image.size
+  #random real number between 1 to 5 with more weight around 1
+  if random.random() < 0.9:
+    rect_num = 1
+  else:
+    rect_num = random.random()*5 + 1
+  rect_w = int(w//(random.random()*rect_num))
+  rect_h = int(h//(random.random()*rect_num))
+  x = random.random()*(w-rect_w)
+  y = random.random()*(h-rect_h)
+
+  draw.rectangle((x, y, x + rect_w, y + rect_h), fill=255)
+  white_image.paste(image, mask=mask)
+  return white_image
 
 def _interpolation_modes_from_str(t: str):  # noqa
     """Map to Interpolation."""
@@ -221,6 +240,9 @@ class RandomCrop(BaseTransform):
                                                     self.size)
             for k in self.keys:
                 components[k][i] = crop(components[k][i], y1, x1, h, w)
+                if k == 'condition_img':
+                  components[k][i] = gen_partial_sketch(components[k][i])
+
             crop_top_left.append([y1, x1])
             crop_bottom_right.append([y1 + h, x1 + w])
 
