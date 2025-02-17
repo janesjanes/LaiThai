@@ -9,7 +9,7 @@ optim_wrapper = dict(
     clip_grad=dict(max_norm=1.0))
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=50)
+train_cfg = dict(by_epoch=True, max_epochs=500)
 val_cfg = None
 test_cfg = None
 
